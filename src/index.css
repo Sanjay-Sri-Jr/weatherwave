@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: linear-gradient(135deg, #09599e, #0c2425);
+  min-height: 100vh;
+}
+.search-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.search-bar input {
+  padding: 10px;
+  border-radius: 8px;
+  border: solid 2px #ccc;
+  width: 200px;
+}
+
+.search-bar button {
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: solid 2px #ccc;
+}
+
+.recent-list {
+  margin-top: 10px;
+}
+
+.recent-list span {
+  margin: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  background: #ccc;
+  border-radius: 6px;
+}
+.weather-card {
+  backdrop-filter: blur(15px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 25px;
+  width: 280px;
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.weather-card img {
+  width: 80px;
+}
+
+.description {
+  text-transform: capitalize;
+  margin-bottom: 15px;
+}
+
+.extra-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}

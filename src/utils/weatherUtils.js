@@ -1,0 +1,64 @@
+export const getWeatherIcon = (weather) => {
+    const iconMap = {
+        Clear: "Sun",
+        Clouds: "Cloud",
+        Rain: "CloudRain",
+        Drizzle: "CloudDrizzle",
+        Thunderstorm: "CloudLightning",
+        Snow: "CloudSnow",
+        Mist: "Cloud Fog",
+        Fog: "Cloud Fog",
+        Haze: "CloudFog",
+        Dust: "Wind",
+        Sand: "Wind",
+        Ash: "Wind",
+        Squall: "Wind",
+        Tornado: "Tornado"
+    }
+    return iconMap[weather] || "Cloud";
+};
+
+export const formatTemperature = (temp, unit) => {
+    if (unit === "F") {
+        return Math.round((temp * 9) / 5 + 32);
+    }
+    return Math.round(temp);
+};
+
+export const formatTime = (timestamp) => {
+    return new Date(timestamp * 1000).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+};
+
+export const formatDate = (timestamp) => {
+    return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+    });
+};
+
+export const getwindDirection = (deg) => {
+    const directions = [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "NW",
+        "NNW"
+    ];
+    return directions[Math.round(deg / 22.5) % 16];
+};
