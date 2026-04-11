@@ -6,7 +6,7 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorMessage from "./components/ErrorMessage";
 import WeatherForecast from "./components/WeatherForecast";
 import { getCurrentWeather } from "./services/apiClient";
-import SearchBar from "./components/searchBar";
+import SearchBar from "./components/SearchBar";
 import { getWeatherIcon } from "./utils/weatherUtils";
 
 function App() {
