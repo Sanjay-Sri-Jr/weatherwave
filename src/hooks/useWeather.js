@@ -1,67 +1,71 @@
-import { useState, useEffect } from "react";
-import { getCurrentWeather, getCurrentWeatherByCoords, getWeatherForecast } from "../services/apiClient";
+import { useCallback, useEffect, useState } from "react";
+import defaultWeatherService from "../services/weatherService";
 
-export const useWeather = () => {
+export const useWeather = ({
+  initialCity = "Chennai",
+  service = defaultWeatherService,
+} = {}) => {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState("C");
 
-  const fetchWeatherByCity = async (city) => {
+  const setWeatherState = ({ currentWeather: nextWeather, forecast: nextForecast }) => {
+    setCurrentWeather(nextWeather);
+    setForecast(nextForecast);
+  };
+
+  const fetchWeatherByCity = useCallback(async (city) => {
     setLoading(true);
     setError(null);
 
     try {
-      const [weatherData, forecast] = await Promise.all(
-        [
-          getCurrentWeather(city),
-          getWeatherForecast(city)
-        ]);
-      setCurrentWeather(weatherData);
-      setForecast(forecast);
+      const data = await service.getWeatherData(city);
+      setWeatherState(data);
     } catch (err) {
       setError(err.message || "Failed to load weather data");
     } finally {
       setLoading(false);
     }
-  };
+  }, [service]);
 
-
-  const fetchWeatherByLocation = async () => {
+  const fetchWeatherByLocation = useCallback(async () => {
     if (!navigator.geolocation) {
+      // Fast-fail keeps geolocation concerns localized to this hook.
       setError("Geolocation is not supported by this browser");
+      return;
     }
+
     setLoading(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      try {
-        const { latitude, longitude } = position.coords;
-        const weatherData = await getCurrentWeatherByCoords(latitude, longitude);
-        setCurrentWeather(weatherData); 
 
-        const forecastData = await getWeatherForecast(weatherData.name);
-        setForecast(forecastData);
-      } catch (err) {
-        setError(err.message || "Failed to load weather data");
-      }
-      finally {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const data = await service.getWeatherDataByCoords(latitude, longitude);
+          setWeatherState(data);
+        } catch (err) {
+          setError(err.message || "Failed to load weather data");
+        } finally {
+          setLoading(false);
+        }
+      },
+      () => {
+        setError("Failed to get your location. Please allow location access and try again.");
         setLoading(false);
       }
-    }, (error) => {
-      setError("Failed to get your location. Please allow location access and try again.");
-      setLoading(false);
-    }
-  );
-  };
+    );
+  }, [service]);
+
   const toggleUnit = () => {
-    setUnit(unit === "C" ? "F" : "C"); 
+    setUnit((prevUnit) => (prevUnit === "C" ? "F" : "C"));
   };
 
   useEffect(() => {
-    fetchWeatherByCity("Chennai");
-  }, []);
+    fetchWeatherByCity(initialCity);
+  }, [fetchWeatherByCity, initialCity]);
 
   return { currentWeather, forecast, loading, error, unit, toggleUnit, fetchWeatherByCity, fetchWeatherByLocation };
-  
-}; 
+};

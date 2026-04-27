@@ -1,71 +1,49 @@
 import { MapPin, Search, X } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
-import { searchCities } from '../services/apiClient';
+import React, { useEffect, useRef } from 'react'
+import { useCitySuggestions } from '../hooks/useCitySuggestions';
 
 export function SearchBar({ onSearch, onLocationSearch, loading }) {
-    const [query, setQuery] = useState("");
-    const [suggestions, setSuggestions] = useState([]);
-    const [showSuggestion, setShowSuggestion] = useState(false);
-    const [searchLoading, setSearchLoading] = useState(false);
+    const {
+        query,
+        setQuery,
+        suggestions,
+        searchLoading,
+        showSuggestions,
+        setShowSuggestions,
+        clearSuggestions,
+    } = useCitySuggestions();
 
     const searchRef = useRef();
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
-                setShowSuggestion(false);
+                setShowSuggestions(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, []);
-
-    useEffect(() => {
-        const searchTimeOut = setTimeout(async () => {
-            if (query.length > 2) {
-                setSearchLoading(true);
-                setShowSuggestion(true);
-                try {
-                    const result = await searchCities(query);
-                    const safeSuggestions = Array.isArray(result) ? result : [];
-                    setSuggestions(safeSuggestions);
-                    setShowSuggestion(safeSuggestions.length > 0);
-                } catch (err) {
-                    console.error("Search failed:", err);
-                    setSuggestions([]);
-                    setShowSuggestion(false);
-                } finally {
-                    setSearchLoading(false);
-                }
-            } else {
-                setSuggestions([]);
-                setShowSuggestion(false);
-            }
-
-        }, 300);
-        return () => clearTimeout(searchTimeOut);
-    }, [query]);
+    }, [setShowSuggestions]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (query.trim()) {
             onSearch(query.trim());
             setQuery("")
-            setShowSuggestion(false);
+            clearSuggestions();
         }
     };
     const clearSearch = () => {
         setQuery("");
-        setSuggestions([])
-        setShowSuggestion(false)
+        clearSuggestions();
     };
     const handleSuggesionsClick = (city) => {
         const cityName = city?.name || "";
         if (!cityName) return;
         onSearch(cityName);
         setQuery("");
-        setShowSuggestion(false);
+        clearSuggestions();
     };
     return (
         <div className='relative w-full max-w-2xl' ref={searchRef}>
@@ -104,7 +82,7 @@ export function SearchBar({ onSearch, onLocationSearch, loading }) {
 
 
             {/* Conditional rendering */}
-            {showSuggestion && ((suggestions?.length ?? 0) > 0 || searchLoading)
+            {showSuggestions && ((suggestions?.length ?? 0) > 0 || searchLoading)
              &&(
                 <div className='absolute top-full left-8 right-6 mt-3 bg-white/10 backdrop-blur-xl
                  border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50'>

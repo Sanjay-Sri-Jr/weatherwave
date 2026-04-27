@@ -1,26 +1,27 @@
-import { useState } from "react";
 import { useWeather } from "./hooks/useWeather";
-import WeatherCard from "./components/WeatherCard";
 import TemperatureToggle from "./components/TemperatureToggle";
-import LoadingSpinner from "./components/LoadingSpinner";
-import ErrorMessage from "./components/ErrorMessage";
-import WeatherForecast from "./components/WeatherForecast";
-import { getCurrentWeather } from "./services/apiClient";
 import SearchBar from "./components/SearchBar";
-import { getWeatherIcon } from "./utils/weatherUtils";
+import WeatherContent from "./components/WeatherContent";
 
 function App() {
+  const {
+    currentWeather,
+    forecast,
+    loading,
+    error,
+    unit,
+    toggleUnit,
+    fetchWeatherByCity,
+    fetchWeatherByLocation,
+  } = useWeather();
 
-  
-  const { currentWeather, forecast, loading, error, unit, toggleUnit, fetchWeatherByCity, fetchWeatherByLocation} = useWeather();
-
-  const  handleRetry=()=>{
-    if(currentWeather){
+  const handleRetry = () => {
+    if (currentWeather) {
       fetchWeatherByCity(currentWeather.name);
-    }else{
+    } else {
       fetchWeatherByCity("Chennai");
     }
-  }
+  };
 
 
   return (
@@ -53,31 +54,15 @@ function App() {
 
         {/* Main content */}
         <div className="space-y-8">
-          {loading && (
-            <div className="flex justify-center">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20">
-                <LoadingSpinner />
-                <p className="text-white/80 text-center mt-4 font-medium">Fetching weather data...</p>
-              </div>
-            </div>
-          )}
-
-          {error && !loading && (
-            <div className="max-w-2xl mx-auto">
-              <ErrorMessage message={error} onRetry={handleRetry} />
-            </div>
-          )}
-
-          {!loading && currentWeather && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              <div className="xl:col-span-2">
-                <WeatherCard weather={currentWeather} unit={unit} />
-              </div>
-              <div className="xl:col-span-1">
-                {forecast && <WeatherForecast forecast={forecast} unit={unit}  />}
-              </div>
-            </div>
-          )}
+          {/* SRP: App orchestrates state only, presentation is delegated. */}
+          <WeatherContent
+            loading={loading}
+            error={error}
+            weather={currentWeather}
+            forecast={forecast}
+            unit={unit}
+            onRetry={handleRetry}
+          />
         </div>
       </div>
     </div>
