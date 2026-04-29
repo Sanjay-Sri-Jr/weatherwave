@@ -32,7 +32,6 @@ export const useWeather = ({
 
   const fetchWeatherByLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      // Fast-fail keeps geolocation concerns localized to this hook.
       setError("Geolocation is not supported by this browser");
       return;
     }
