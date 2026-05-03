@@ -47,3 +47,5 @@ Sanjay
 * email: sanjaysri02082005@gmail.com
 * github: Sanjay-Sri-Jr
 * linkedin: https://www.linkedin.com/in/sanjay-sri-jr/
+
+added dev and main branch
