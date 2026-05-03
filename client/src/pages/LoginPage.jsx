@@ -3,28 +3,26 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginApi } from '../services/apiClient';
-import { CloudLightning } from 'lucide-react';
+import { CloudSun } from 'lucide-react';
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [formData, setFormData]   = useState({ email: '', password: '' });
+  const [error, setError]         = useState('');
+  const [loading, setLoading]     = useState(false);
+  const { login }                 = useAuth();
+  const navigate                  = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const data = await loginApi(formData);
-      login(data.token, data.user); // store in context + localStorage
-      navigate('/weather');          // redirect to main app
+      login(data.token, data.user);
+      navigate('/dashboard'); // ← updated from /weather
     } catch (err) {
       setError(err.message);
     } finally {
@@ -33,20 +31,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#09599e] to-[#0c2425] flex items-center justify-center px-4">
+    // Add pt-20 so content clears the fixed Navbar
+    <div className="min-h-screen bg-gradient-to-br from-[#09599e] to-[#0c2425] flex items-center justify-center px-4 pt-20">
       <div className="w-full max-w-md">
-        {/* Logo */}
+
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <CloudLightning className="w-10 h-10 text-blue-400" />
+            <CloudSun className="w-10 h-10 text-blue-400" />
             <h1 className="text-4xl font-bold text-white">
               Weather<span className="text-blue-400">Wave</span>
             </h1>
           </div>
-          <p className="text-white/60">Sign in to access your weather dashboard</p>
+          <p className="text-white/60">Sign in to your account</p>
         </div>
 
-        {/* Card */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
           <h2 className="text-2xl font-semibold text-white mb-6">Welcome back</h2>
 
@@ -57,29 +55,24 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-4">
-            <div>
-              <label className="text-white/70 text-sm font-medium block mb-2">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="text-white/70 text-sm font-medium block mb-2">Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all"
-              />
-            </div>
+            {[
+              { label: 'Email',    name: 'email',    type: 'email',    placeholder: 'you@example.com' },
+              { label: 'Password', name: 'password', type: 'password', placeholder: '••••••••' },
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="text-white/70 text-sm font-medium block mb-2">
+                  {field.label}
+                </label>
+                <input
+                  type={field.type}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  placeholder={field.placeholder}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
+                />
+              </div>
+            ))}
 
             <button
               onClick={handleSubmit}
@@ -97,6 +90,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
+
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export default function SignupPage() {
         password: formData.password,
       });
       login(data.token, data.user);
-      navigate('/weather');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -44,7 +44,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#09599e] to-[#0c2425] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#09599e] to-[#0c2425] flex items-center justify-center px-4 pt-20">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
@@ -67,7 +67,7 @@ export default function SignupPage() {
 
           <div className="space-y-4">
             {[
-              { label: 'Full Name', name: 'name', type: 'text', placeholder: 'John Doe' },
+              { label: 'Full Name', name: 'name', type: 'text', placeholder: 'Your Name' },
               { label: 'Email', name: 'email', type: 'email', placeholder: 'you@example.com' },
               { label: 'Password', name: 'password', type: 'password', placeholder: '••••••••' },
               { label: 'Confirm Password', name: 'confirmPassword', type: 'password', placeholder: '••••••••' },

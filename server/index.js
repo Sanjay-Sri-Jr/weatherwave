@@ -1,4 +1,5 @@
 // server/index.js
+import './config/env.js';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';

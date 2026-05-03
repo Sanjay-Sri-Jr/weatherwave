@@ -2,6 +2,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import WeatherApp from './pages/WeatherApp';
@@ -10,19 +12,18 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        {/* Navbar shows on every page */}
+        <Navbar />
+
         <Routes>
+          {/* Public routes */}
+          <Route path="/"        element={<Home />} />
+          <Route path="/login"   element={<LoginPage />} />
+          <Route path="/signup"  element={<SignupPage />} />
 
-          {/* Default route — redirect root to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* Public routes — accessible without login */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-
-          {/* Protected route — only accessible when logged in */}
-          {/* If not logged in, ProtectedRoute redirects to /login */}
+          {/* Protected route */}
           <Route
-            path="/weather"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <WeatherApp />
@@ -30,9 +31,8 @@ function App() {
             }
           />
 
-          {/* Catch-all — any unknown URL redirects to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
