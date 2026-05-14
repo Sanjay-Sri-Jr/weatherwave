@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import defaultWeatherService from "../services/weatherService";
 
+const savedCity = localStorage.getItem("ww_lastCity") || "Chennai";
+
 export const useWeather = ({
-  initialCity = "Chennai",
+  initialCity = savedCity,
   service = defaultWeatherService,
 } = {}) => {
   const [currentWeather, setCurrentWeather] = useState(null);
@@ -23,6 +25,7 @@ export const useWeather = ({
     try {
       const data = await service.getWeatherData(city);
       setWeatherState(data);
+      localStorage.setItem("ww_lastCity", city);
     } catch (err) {
       setError(err.message || "Failed to load weather data");
     } finally {
@@ -45,6 +48,7 @@ export const useWeather = ({
           const { latitude, longitude } = position.coords;
           const data = await service.getWeatherDataByCoords(latitude, longitude);
           setWeatherState(data);
+          localStorage.setItem("ww_lastCity", data.currentWeather.city);
         } catch (err) {
           setError(err.message || "Failed to load weather data");
         } finally {

@@ -14,13 +14,13 @@ const generateToken = (userId) => {
 
 // Register a new user
 export const registerUser = async ({ name, email, password }) => {
-  // 1. Check if user already exists
+  // 1. Checking if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error('An account with this email already exists.');
   }
 
-  // 2. Hash the password (never store plain text)
+  // 2. Hash the password before saving to the database
   const saltRounds = 12; // Higher = more secure but slower. 12 is a good balance.
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -50,7 +50,6 @@ export const loginUser = async ({ email, password }) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
-    // Use a generic message — don't reveal whether email exists
     throw new Error('Invalid email or password.');
   }
 

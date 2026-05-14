@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true); // true on first load
+  const [loading, setLoading] = useState(true); 
 
   // On app start, restore session from localStorage
   useEffect(() => {

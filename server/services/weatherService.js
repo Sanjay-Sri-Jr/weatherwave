@@ -7,7 +7,6 @@ export const getWeatherByCity = async (city) => {
     const BASE_URL = process.env.WEATHER_BASE_URL;
     const API_KEY  = process.env.WEATHER_API_KEY;
 
-    // ← check inside function, NOT at module load time
     console.log('[weatherService] BASE_URL:', BASE_URL);
     console.log('[weatherService] API_KEY exists:', !!API_KEY);
     console.log('[weatherService] Fetching city:', city);
