@@ -1,69 +1,45 @@
-// server/controllers/authController.js
+import asyncHandler from '../utils/asyncHandler.js';
 import * as authService from '../services/authService.js';
 
-// POST /api/auth/signup
-export const signup = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
+/**
+ * POST /api/auth/signup
+ * Register a new user account.
+ */
+export const signup = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
 
-    // Basic input validation at controller level
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name, email, and password are required.',
-      });
-    }
+  const result = await authService.registerUser({ name, email, password });
 
-    const result = await authService.registerUser({ name, email, password });
+  res.status(201).json({
+    success: true,
+    message: 'Account created successfully.',
+    ...result,
+  });
+});
 
-    return res.status(201).json({
-      success: true,
-      message: 'Account created successfully.',
-      ...result,
-    });
+/**
+ * POST /api/auth/login
+ * Authenticate user and return JWT.
+ */
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+  const result = await authService.loginUser({ email, password });
 
-// POST /api/auth/login
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  res.status(200).json({
+    success: true,
+    message: 'Login successful.',
+    ...result,
+  });
+});
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required.',
-      });
-    }
+/**
+ * GET /api/auth/me
+ * Return authenticated user's profile.
+ * req.user is attached by authMiddleware.
+ */
+export const getMe = asyncHandler(async (req, res) => {
+  const user = await authService.getUserProfile(req.user._id);
 
-    const result = await authService.loginUser({ email, password });
-
-    return res.status(200).json({
-      success: true,
-      message: 'Login successful.',
-      ...result,
-    });
-
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// GET /api/auth/me  (protected)
-export const getMe = async (req, res) => {
-  try {
-    const user = await authService.getUserProfile(req.user._id);
-    return res.status(200).json({ success: true, user });
-  } catch (error) {
-    return res.status(404).json({ success: false, message: error.message });
-  }
-};
+  res.status(200).json({ success: true, user });
+});

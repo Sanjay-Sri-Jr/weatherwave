@@ -1,33 +1,32 @@
-import { useEffect, useState } from "react";
-import defaultWeatherService from "../services/weatherService";
+import { useEffect, useState } from 'react';
+import defaultWeatherService from '../services/weatherService';
 
 export const useCitySuggestions = ({
-  service = defaultWeatherService,
-  debounceMs = 300,
-  minQueryLength = 3,
+  service      = defaultWeatherService,
+  debounceMs   = 300,
+  minQueryLen  = 3,
 } = {}) => {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (query.length < minQueryLength) {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        return;
-      }
+    // Skip API call if query too short
+    if (query.length < minQueryLen) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
 
+    const timer = setTimeout(async () => {
       setSearchLoading(true);
       setShowSuggestions(true);
 
       try {
-        const result = await service.searchCities(query);
-        const safeSuggestions = Array.isArray(result) ? result : [];
-
-        setSuggestions(safeSuggestions);
-        setShowSuggestions(safeSuggestions.length > 0);
+        const results = await service.searchCities(query);
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
       } catch {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -37,7 +36,7 @@ export const useCitySuggestions = ({
     }, debounceMs);
 
     return () => clearTimeout(timer);
-  }, [debounceMs, minQueryLength, query, service]);
+  }, [query, service, debounceMs, minQueryLen]);
 
   const clearSuggestions = () => {
     setSuggestions([]);

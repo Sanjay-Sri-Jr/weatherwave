@@ -1,34 +1,32 @@
-// client/src/services/weatherService.js
-import * as apiClient from "./apiClient";
+import * as weatherApi from '../api/weatherApi';
 
-export const createWeatherService = (client = apiClient) => ({
+export const createWeatherService = (api = weatherApi) => ({
 
-  // ✅ Single call — backend returns currentWeather + forecast together
   async getWeatherData(city) {
-    const data = await client.getCurrentWeather(city);
+    const data = await api.getWeatherByCity(city);
     return {
       currentWeather: data.currentWeather,
-      forecast: data.forecast,
+      forecast:       data.forecast,
     };
   },
 
-  // ✅ Coords — backend returns both together
   async getWeatherDataByCoords(latitude, longitude) {
-    const data = await client.getCurrentWeatherByCoords(latitude, longitude);
+    const data = await api.getWeatherByCoords(latitude, longitude);
     return {
       currentWeather: data.currentWeather,
-      forecast: data.forecast,
+      forecast:       data.forecast,
     };
   },
 
-  // ✅ City autocomplete
   async searchCities(query) {
-    return client.searchCities(query);
+    const data = await api.searchCities(query);
+    // unwrap suggestions array from { success, suggestions: [] }
+    return Array.isArray(data?.suggestions) ? data.suggestions : [];
   },
 
-  // ✅ Search history from MongoDB
   async getSearchHistory() {
-    return client.getSearchHistory();
+    const data = await api.getSearchHistory();
+    return data?.history || [];
   },
 
 });

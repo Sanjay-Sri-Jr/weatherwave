@@ -2,14 +2,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { loginApi } from '../services/apiClient';
+import authService from '../services/authService';
 import { CloudSun } from 'lucide-react';
 
 export default function LoginPage() {
   const [formData, setFormData]   = useState({ email: '', password: '' });
   const [error, setError]         = useState('');
   const [loading, setLoading]     = useState(false);
-  const { login }                 = useAuth();
+  const { setAuthLogin }          = useAuth();
   const navigate                  = useNavigate();
 
   const handleChange = (e) =>
@@ -20,8 +20,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await loginApi(formData);
-      login(data.token, data.user);
+      const data = await authService.login(formData);
+      setAuthLogin(data.token, data.user);
       navigate('/dashboard'); // ← updated from /weather
     } catch (err) {
       setError(err.message);
