@@ -1,83 +1,81 @@
-// server/services/authService.js
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import bcrypt   from 'bcryptjs';
+import jwt      from 'jsonwebtoken';
+import User     from '../models/User.js';
+import ApiError from '../utils/ApiError.js';
+import logger   from '../utils/logger.js';
 
-// Generate a JWT token for a user
-const generateToken = (userId) => {
-  return jwt.sign(
+// ── Private helper — not exported ─────────────────────────────
+const generateToken = (userId) =>
+  jwt.sign(
     { id: userId },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
-};
 
-// Register a new user
+// ── Format user for API response ──────────────────────────────
+const formatUser = (user) => ({
+  id:    user._id,
+  name:  user.name,
+  email: user.email,
+});
+
+/**
+ * Register a new user account.
+ * @param {{ name: string, email: string, password: string }} data
+ * @returns {Promise<{ token: string, user: Object }>}
+ * @throws {ApiError} 400 if email already registered
+ */
 export const registerUser = async ({ name, email, password }) => {
-  // 1. Checking if user already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error('An account with this email already exists.');
+  // Check for existing account
+  const existing = await User.findOne({ email });
+  if (existing) {
+    throw ApiError.badRequest('An account with this email already exists.');
   }
 
-  // 2. Hash the password before saving to the database
-  const saltRounds = 12; // Higher = more secure but slower. 12 is a good balance.
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  // Hash password — 12 rounds is strong and within acceptable time
+  const hashedPassword = await bcrypt.hash(password, 12);
 
-  // 3. Create user in database
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-  });
-
-  // 4. Generate token
+  const user  = await User.create({ name, email, password: hashedPassword });
   const token = generateToken(user._id);
 
-  return {
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-  };
+  logger.info(`New user registered: ${email}`);
+
+  return { token, user: formatUser(user) };
 };
 
-// Login an existing user
+/**
+ * Authenticate a user and return a JWT.
+ * @param {{ email: string, password: string }} credentials
+ * @returns {Promise<{ token: string, user: Object }>}
+ * @throws {ApiError} 401 for invalid credentials
+ */
 export const loginUser = async ({ email, password }) => {
-  // 1. Find user WITH password (select: false means we must explicitly request it)
+  // Must select password explicitly (select: false on schema)
   const user = await User.findOne({ email }).select('+password');
 
-  if (!user) {
-    throw new Error('Invalid email or password.');
-  }
+  // Generic message — never reveal whether email exists or not
+  const invalidCredentialsError = ApiError.unauthorized('Invalid email or password.');
 
-  // 2. Compare provided password with hashed password in DB
-  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!user) throw invalidCredentialsError;
 
-  if (!isPasswordCorrect) {
-    throw new Error('Invalid email or password.');
-  }
+  const passwordMatch = await bcrypt.compare(password, user.password);
+  if (!passwordMatch) throw invalidCredentialsError;
 
-  // 3. Generate token
   const token = generateToken(user._id);
 
-  return {
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-  };
+  logger.info(`User logged in: ${email}`);
+
+  return { token, user: formatUser(user) };
 };
 
-// Get user profile
+/**
+ * Fetch a user's profile by ID.
+ * @param {string} userId
+ * @returns {Promise<Object>} User document (without password)
+ * @throws {ApiError} 404 if not found
+ */
 export const getUserProfile = async (userId) => {
   const user = await User.findById(userId).select('-password');
-  if (!user) {
-    throw new Error('User not found.');
-  }
+  if (!user) throw ApiError.notFound('User not found.');
   return user;
 };

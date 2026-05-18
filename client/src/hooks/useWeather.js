@@ -1,41 +1,46 @@
-import { useCallback, useEffect, useState } from "react";
-import defaultWeatherService from "../services/weatherService";
+import { useCallback, useEffect, useState } from 'react';
+import defaultWeatherService from '../services/weatherService';
 
-const savedCity = localStorage.getItem("ww_lastCity") || "Chennai";
+// Restore last city from localStorage — falls back to 'Chennai'
+const getInitialCity = () =>
+  localStorage.getItem('ww_lastCity') || 'Chennai';
 
 export const useWeather = ({
-  initialCity = savedCity,
   service = defaultWeatherService,
 } = {}) => {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [unit, setUnit] = useState("C");
+  const [unit, setUnit] = useState('C');
 
-  const setWeatherState = ({ currentWeather: nextWeather, forecast: nextForecast }) => {
-    setCurrentWeather(nextWeather);
-    setForecast(nextForecast);
+  // Internal state setter for weather data to avoid repetition in fetch functions  
+  const _applyWeatherData = ({ currentWeather: cw, forecast: fc }) => {
+    setCurrentWeather(cw);
+    setForecast(fc);
   };
 
+  // Fetch by city name
   const fetchWeatherByCity = useCallback(async (city) => {
     setLoading(true);
     setError(null);
 
     try {
       const data = await service.getWeatherData(city);
-      setWeatherState(data);
-      localStorage.setItem("ww_lastCity", city);
+      _applyWeatherData(data);
+      // save last searched city across sessions
+      localStorage.setItem('ww_lastCity', city);
     } catch (err) {
-      setError(err.message || "Failed to load weather data");
+      setError(err.message || 'Failed to load weather data.');
     } finally {
       setLoading(false);
     }
   }, [service]);
 
+  // Fetch by geolocation 
   const fetchWeatherByLocation = useCallback(async () => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by this browser");
+      setError('Geolocation is not supported by your browser.');
       return;
     }
 
@@ -43,32 +48,44 @@ export const useWeather = ({
     setError(null);
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      async ({ coords: { latitude, longitude } }) => {
         try {
-          const { latitude, longitude } = position.coords;
           const data = await service.getWeatherDataByCoords(latitude, longitude);
-          setWeatherState(data);
-          localStorage.setItem("ww_lastCity", data.currentWeather.city);
+          _applyWeatherData(data);
+          // Save detected city name for next session
+          if (data.currentWeather?.name) {
+            localStorage.setItem('ww_lastCity', data.currentWeather.name);
+          }
         } catch (err) {
-          setError(err.message || "Failed to load weather data");
+          setError(err.message || 'Failed to load location weather.');
         } finally {
           setLoading(false);
         }
       },
       () => {
-        setError("Failed to get your location. Please allow location access and try again.");
+        setError('Location access denied. Please allow location and retry.');
         setLoading(false);
       }
     );
   }, [service]);
 
-  const toggleUnit = () => {
-    setUnit((prevUnit) => (prevUnit === "C" ? "F" : "C"));
-  };
+  // Toggle temperature unit
+  const toggleUnit = () =>
+    setUnit((prev) => (prev === 'C' ? 'F' : 'C'));
 
+  // Load initial city on mount 
   useEffect(() => {
-    fetchWeatherByCity(initialCity);
-  }, [fetchWeatherByCity, initialCity]);
+    fetchWeatherByCity(getInitialCity());
+  }, [fetchWeatherByCity]);
 
-  return { currentWeather, forecast, loading, error, unit, toggleUnit, fetchWeatherByCity, fetchWeatherByLocation };
+  return {
+    currentWeather,
+    forecast,
+    loading,
+    error,
+    unit,
+    toggleUnit,
+    fetchWeatherByCity,
+    fetchWeatherByLocation,
+  };
 };

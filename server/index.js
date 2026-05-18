@@ -1,43 +1,41 @@
-// server/index.js
-import './config/env.js';
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import connectDB from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
+import './config/env.js';            // Must be first
+import express    from 'express';
+import cors       from 'cors';
+import connectDB  from './config/db.js';
+import authRoutes    from './routes/authRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
-
-// Load environment variables
-dotenv.config();
+import errorMiddleware  from './middleware/errorMiddleware.js';
+import { generalLimiter } from './middleware/rateLimitMiddleware.js';
+import logger from './utils/logger.js';
 
 // Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Middleware
+// ── Global Middleware ──────────────────────────────────────────
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite's default port
+  origin:      process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json()); // Parse JSON request bodies
+app.use(express.json());
+app.use(generalLimiter); // Rate limit all routes
 
-// Routes
-app.use('/api/auth', authRoutes);
+// ── Routes ─────────────────────────────────────────────────────
+app.use('/api/auth',    authRoutes);
 app.use('/api/weather', weatherRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running.' });
+  res.json({ success: true, message: 'Server is running.', timestamp: new Date() });
 });
 
-// Global error handler (catch-all)
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, message: 'Internal server error.' });
-});
+// ── Global Error Handler ──────────────────────────────────────
+// MUST be last — after all routes
+app.use(errorMiddleware);
 
+// ── Start Server ──────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  logger.info(`Server running on http://localhost:${PORT}`);
 });

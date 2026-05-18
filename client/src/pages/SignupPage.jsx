@@ -2,14 +2,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { signupApi } from '../services/apiClient';
+import authService from '../services/authService';
 import { CloudLightning } from 'lucide-react';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { setAuthLogin } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -29,12 +29,12 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const data = await signupApi({
+      const data = await authService.signup({
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
-      login(data.token, data.user);
+      setAuthLogin(data.token, data.user);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

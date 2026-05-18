@@ -1,114 +1,103 @@
-// server/services/weatherService.js
-import axios from 'axios';
-import User from '../models/User.js';
+import axios    from 'axios';
+import ApiError from '../utils/ApiError.js';
+import logger   from '../utils/logger.js';
 
+// ── Private helper — build OWM base URL ───────────────────────
+const owmUrl    = (path) => `${process.env.WEATHER_BASE_URL}${path}`;
+const geoUrl    = (path) => `${process.env.GEO_URL}${path}`;
+const apiKey    = ()     => process.env.WEATHER_API_KEY;
+
+/**
+ * Fetch current weather + 5-day forecast for a city name.
+ * Uses Promise.all to fire both requests simultaneously.
+ *
+ * @param {string} city
+ * @returns {Promise<{ currentWeather: Object, forecast: Object }>}
+ * @throws {ApiError} 404 if city not found, 500 for server errors
+ */
 export const getWeatherByCity = async (city) => {
+  logger.info(`[WeatherService] Fetching weather for city: ${city}`);
+
   try {
-    const BASE_URL = process.env.WEATHER_BASE_URL;
-    const API_KEY  = process.env.WEATHER_API_KEY;
-
-    console.log('[weatherService] BASE_URL:', BASE_URL);
-    console.log('[weatherService] API_KEY exists:', !!API_KEY);
-    console.log('[weatherService] Fetching city:', city);
-
-    const encodedCity = encodeURIComponent(city);
+    const params = { q: city, appid: apiKey(), units: 'metric' };
 
     const [weatherRes, forecastRes] = await Promise.all([
-      axios.get(`${BASE_URL}/weather?q=${encodedCity}&appid=${API_KEY}&units=metric`),
-      axios.get(`${BASE_URL}/forecast?q=${encodedCity}&appid=${API_KEY}&units=metric`),
+      axios.get(owmUrl('/weather'),  { params }),
+      axios.get(owmUrl('/forecast'), { params }),
     ]);
 
     return {
       currentWeather: weatherRes.data,
       forecast:       forecastRes.data,
     };
-
   } catch (error) {
-    console.error('[weatherService] Error:', error.response?.status, error.message);
-
-    const status = error.response?.status;
-    if (status === 404) throw new Error(`City "${city}" not found. Please check the name and try again.`);
-    if (status === 401) throw new Error('Invalid Weather API key. Check WEATHER_API_KEY in .env');
-    if (status === 400) throw new Error(`Bad request to weather API. City "${city}" may be invalid.`);
-    if (status === 429) throw new Error('Weather API rate limit exceeded. Please try again later.');
-
-    throw new Error('Failed to fetch weather data. Please try again later.');
+    _handleOwmError(error, city);
   }
 };
 
+/**
+ * Fetch weather by latitude and longitude.
+ *
+ * @param {number} lat
+ * @param {number} lon
+ * @returns {Promise<{ currentWeather: Object, forecast: Object }>}
+ */
 export const getWeatherByCoords = async (lat, lon) => {
+  logger.info(`[WeatherService] Fetching weather for coords: ${lat}, ${lon}`);
+
   try {
-    const BASE_URL = process.env.WEATHER_BASE_URL;
-    const API_KEY  = process.env.WEATHER_API_KEY;
+    const params = { lat, lon, appid: apiKey(), units: 'metric' };
 
-    console.log('[weatherService] Fetching by coords:', lat, lon);
+    const weatherRes = await axios.get(owmUrl('/weather'), { params });
+    const city       = weatherRes.data.name;
 
-    const weatherRes = await axios.get(
-      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-    );
-
-    const city = weatherRes.data.name;
-    const forecastRes = await axios.get(
-      `${BASE_URL}/forecast?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric`
-    );
+    const forecastRes = await axios.get(owmUrl('/forecast'), {
+      params: { q: city, appid: apiKey(), units: 'metric' },
+    });
 
     return {
       currentWeather: weatherRes.data,
       forecast:       forecastRes.data,
     };
-
   } catch (error) {
-    console.error('[weatherService] Coords error:', error.response?.status, error.message);
-    const status = error.response?.status;
-    if (status === 401) throw new Error('Invalid Weather API key.');
-    if (status === 400) throw new Error('Invalid coordinates provided.');
-    throw new Error('Failed to fetch weather data by location.');
+    _handleOwmError(error);
   }
 };
 
+/**
+ * Search city name suggestions using OWM Geocoding API.
+ *
+ * @param {string} query - Partial city name
+ * @returns {Promise<Array<{ name, lat, lon, country, state }>>}
+ */
 export const searchCitySuggestions = async (query) => {
+  logger.info(`[WeatherService] Searching cities: ${query}`);
+
   try {
-    const API_KEY = process.env.WEATHER_API_KEY;
-    const GEO_URL = process.env.GEO_URL;
+    const res = await axios.get(geoUrl('/direct'), {
+      params: { q: query, limit: 5, appid: apiKey() },
+    });
 
-    console.log('[weatherService] Searching cities for:', query);
-
-    const res = await axios.get(
-      `${GEO_URL}/direct?q=${encodeURIComponent(query)}&limit=5&appid=${API_KEY}`
-    );
-
-    return res.data.map((city) => ({
-      name:    city.name,
-      lat:     city.lat,
-      lon:     city.lon,
-      country: city.country,
-      state:   city.state || '',
+    return res.data.map(({ name, lat, lon, country, state }) => ({
+      name, lat, lon, country, state: state || '',
     }));
-
   } catch (error) {
-    console.error('[weatherService] Search error:', error.response?.status, error.message);
-    throw new Error('Failed to fetch city suggestions.');
+    logger.error('[WeatherService] Search error:', error.message);
+    throw ApiError.internal('Failed to fetch city suggestions.');
   }
 };
 
-export const saveSearchHistory = async (userId, city) => {
-  try {
-    const user = await User.findById(userId);
-    user.searchHistory = user.searchHistory.filter(
-      (entry) => entry.city.toLowerCase() !== city.toLowerCase()
-    );
-    user.searchHistory.unshift({ city, searchedAt: new Date() });
-    if (user.searchHistory.length > 10) {
-      user.searchHistory = user.searchHistory.slice(0, 10);
-    }
-    await user.save();
-    return user.searchHistory;
-  } catch (error) {
-    throw new Error('Failed to save search history.');
-  }
-};
+// ── Private: Map OWM error codes to ApiError ──────────────────
+const _handleOwmError = (error, city = '') => {
+  const status = error.response?.status;
+  logger.error(`[WeatherService] OWM error ${status}:`, error.message);
 
-export const getSearchHistory = async (userId) => {
-  const user = await User.findById(userId).select('searchHistory');
-  return user?.searchHistory || [];
+  if (status === 404) throw ApiError.notFound(
+    city ? `City "${city}" not found. Please check the name.` : 'Location not found.'
+  );
+  if (status === 401) throw ApiError.unauthorized('Invalid Weather API key.');
+  if (status === 400) throw ApiError.badRequest('Invalid request to weather API.');
+  if (status === 429) throw ApiError.tooMany('Weather API rate limit exceeded. Please retry later.');
+
+  throw ApiError.internal('Failed to fetch weather data. Please try again.');
 };

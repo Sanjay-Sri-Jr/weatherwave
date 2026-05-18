@@ -1,12 +1,16 @@
-// server/routes/authRoutes.js
 import express from 'express';
-import { signup, login, getMe } from '../controllers/authController.js';
-import protect from '../middleware/authMiddleware.js';
+import { signup, login, getMe }           from '../controllers/authController.js';
+import { validateSignup, validateLogin }  from '../validators/authValidator.js';
+import protect                            from '../middleware/authMiddleware.js';
+import { authLimiter }                    from '../middleware/rateLimitMiddleware.js';
 
 const router = express.Router();
 
-router.post('/signup', signup);
-router.post('/login', login);
-router.get('/me', protect, getMe); // protected — must be logged in
+// Public routes — strict rate limit applied
+router.post('/signup', authLimiter, validateSignup, signup);
+router.post('/login',  authLimiter, validateLogin,  login);
+
+// Protected route
+router.get('/me', protect, getMe);
 
 export default router;
