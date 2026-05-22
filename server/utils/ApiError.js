@@ -10,7 +10,7 @@ class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  // ── Named constructors for common errors ──────────────────
+  // Named constructors for common errors 
   static badRequest(message) { return new ApiError(message, 400); }
   static unauthorized(message) { return new ApiError(message, 401); }
   static forbidden(message) { return new ApiError(message, 403); }

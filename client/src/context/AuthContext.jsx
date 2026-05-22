@@ -4,8 +4,8 @@ import authService from '../services/authService';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);
-  const [token,   setToken]   = useState(null);
+  const [user, setUser]    = useState(null);
+  const [token, setToken]   = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Restore session on app mount

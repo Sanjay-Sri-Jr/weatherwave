@@ -1,4 +1,4 @@
-import './config/env.js';            // Must be first
+import './config/env.js';           
 import express    from 'express';
 import cors       from 'cors';
 import connectDB  from './config/db.js';
@@ -13,15 +13,15 @@ connectDB();
 
 const app = express();
 
-// ── Global Middleware ──────────────────────────────────────────
+// Global Middleware 
 app.use(cors({
-  origin:      process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
 app.use(express.json());
 app.use(generalLimiter); // Rate limit all routes
 
-// ── Routes ─────────────────────────────────────────────────────
+// Routes 
 app.use('/api/auth',    authRoutes);
 app.use('/api/weather', weatherRoutes);
 
@@ -30,11 +30,11 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running.', timestamp: new Date() });
 });
 
-// ── Global Error Handler ──────────────────────────────────────
+//  Global Error Handler 
 // MUST be last — after all routes
 app.use(errorMiddleware);
 
-// ── Start Server ──────────────────────────────────────────────
+//  Start Server 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   logger.info(`Server running on http://localhost:${PORT}`);

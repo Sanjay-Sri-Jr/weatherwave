@@ -2,19 +2,11 @@ import axios    from 'axios';
 import ApiError from '../utils/ApiError.js';
 import logger   from '../utils/logger.js';
 
-// ── Private helper — build OWM base URL ───────────────────────
+// Private helper — build OWM base URL 
 const owmUrl    = (path) => `${process.env.WEATHER_BASE_URL}${path}`;
 const geoUrl    = (path) => `${process.env.GEO_URL}${path}`;
 const apiKey    = ()     => process.env.WEATHER_API_KEY;
 
-/**
- * Fetch current weather + 5-day forecast for a city name.
- * Uses Promise.all to fire both requests simultaneously.
- *
- * @param {string} city
- * @returns {Promise<{ currentWeather: Object, forecast: Object }>}
- * @throws {ApiError} 404 if city not found, 500 for server errors
- */
 export const getWeatherByCity = async (city) => {
   logger.info(`[WeatherService] Fetching weather for city: ${city}`);
 
@@ -28,20 +20,13 @@ export const getWeatherByCity = async (city) => {
 
     return {
       currentWeather: weatherRes.data,
-      forecast:       forecastRes.data,
+      forecast: forecastRes.data,
     };
   } catch (error) {
     _handleOwmError(error, city);
   }
 };
 
-/**
- * Fetch weather by latitude and longitude.
- *
- * @param {number} lat
- * @param {number} lon
- * @returns {Promise<{ currentWeather: Object, forecast: Object }>}
- */
 export const getWeatherByCoords = async (lat, lon) => {
   logger.info(`[WeatherService] Fetching weather for coords: ${lat}, ${lon}`);
 
@@ -57,19 +42,13 @@ export const getWeatherByCoords = async (lat, lon) => {
 
     return {
       currentWeather: weatherRes.data,
-      forecast:       forecastRes.data,
+      forecast: forecastRes.data,
     };
   } catch (error) {
     _handleOwmError(error);
   }
 };
 
-/**
- * Search city name suggestions using OWM Geocoding API.
- *
- * @param {string} query - Partial city name
- * @returns {Promise<Array<{ name, lat, lon, country, state }>>}
- */
 export const searchCitySuggestions = async (query) => {
   logger.info(`[WeatherService] Searching cities: ${query}`);
 
@@ -87,7 +66,7 @@ export const searchCitySuggestions = async (query) => {
   }
 };
 
-// ── Private: Map OWM error codes to ApiError ──────────────────
+// Private: Map OWM error codes to ApiError 
 const _handleOwmError = (error, city = '') => {
   const status = error.response?.status;
   logger.error(`[WeatherService] OWM error ${status}:`, error.message);

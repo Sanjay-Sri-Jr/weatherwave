@@ -6,7 +6,7 @@ export const createWeatherService = (api = weatherApi) => ({
     const data = await api.getWeatherByCity(city);
     return {
       currentWeather: data.currentWeather,
-      forecast:       data.forecast,
+      forecast: data.forecast,
     };
   },
 
@@ -14,7 +14,7 @@ export const createWeatherService = (api = weatherApi) => ({
     const data = await api.getWeatherByCoords(latitude, longitude);
     return {
       currentWeather: data.currentWeather,
-      forecast:       data.forecast,
+      forecast: data.forecast,
     };
   },
 
