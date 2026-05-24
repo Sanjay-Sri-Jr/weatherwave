@@ -10,7 +10,7 @@ const errorMiddleware = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const isApiError = err.name === 'ApiError';
 
-  // Log all errors (full stack in development, minimal in production)
+  // Log all errors 
   if (statusCode >= 500) {
     logger.error(`[${req.method}] ${req.path} — ${err.message}`, err.stack);
   } else {

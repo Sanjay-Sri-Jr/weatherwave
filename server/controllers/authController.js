@@ -1,10 +1,8 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import * as authService from '../services/authService.js';
 
-/**
- * POST /api/auth/signup
- * Register a new user account.
- */
+// POST /api/auth/signup
+// Register a new user account.
 export const signup = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -17,10 +15,8 @@ export const signup = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * POST /api/auth/login
- * Authenticate user and return JWT.
- */
+// POST /api/auth/login
+// Authenticate user and return JWT.
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -33,11 +29,9 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * GET /api/auth/me
- * Return authenticated user's profile.
- * req.user is attached by authMiddleware.
- */
+// GET /api/auth/me
+// Return authenticated user's profile.
+// req.user is attached by authMiddleware.
 export const getMe = asyncHandler(async (req, res) => {
   const user = await authService.getUserProfile(req.user._id);
 

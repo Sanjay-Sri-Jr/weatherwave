@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import defaultWeatherService from '../services/weatherService';
 
-// Restore last city from localStorage — falls back to 'Chennai'
+// Restore last city from localStorage or default to 'Chennai' if not available
 const getInitialCity = () =>
   localStorage.getItem('ww_lastCity') || 'Chennai';
 
