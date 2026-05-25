@@ -13,6 +13,9 @@ connectDB();
 
 const app = express();
 
+// Trust reverse proxy 
+app.set('trust proxy', 1);
+
 // Global Middleware 
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
