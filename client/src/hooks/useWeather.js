@@ -10,14 +10,16 @@ export const useWeather = ({
 } = {}) => {
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
+  const [forecastChartData, setForecastChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState('C');
 
   // Internal state setter for weather data to avoid repetition in fetch functions  
-  const _applyWeatherData = ({ currentWeather: cw, forecast: fc }) => {
+  const _applyWeatherData = ({ currentWeather: cw, forecast: fc, forecastChartData: chartData }) => {
     setCurrentWeather(cw);
     setForecast(fc);
+    setForecastChartData(chartData);
   };
 
   // Fetch by city name
@@ -87,5 +89,6 @@ export const useWeather = ({
     toggleUnit,
     fetchWeatherByCity,
     fetchWeatherByLocation,
+    forecastChartData,
   };
 };

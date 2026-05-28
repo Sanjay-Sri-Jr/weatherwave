@@ -2,8 +2,9 @@ import ErrorMessage from "./ErrorMessage";
 import LoadingSpinner from "./LoadingSpinner";
 import WeatherCard from "./WeatherCard";
 import WeatherForecast from "./WeatherForecast";
+import WeatherChart from "./charts/WeatherChart";
 
-export default function WeatherContent({ loading, error, weather, forecast, unit, onRetry }) {
+export default function WeatherContent({ loading, error, weather, forecast, forecastChartData, unit, onRetry }) {
   if (loading) {
     return (
       <div className="flex justify-center">
@@ -30,7 +31,10 @@ export default function WeatherContent({ loading, error, weather, forecast, unit
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
       <div className="xl:col-span-2">
-        <WeatherCard weather={weather} unit={unit} />
+        <div className="space-y-8">
+          <WeatherCard weather={weather} unit={unit} />
+          <WeatherChart chartData={forecastChartData} />
+        </div>
       </div>
       <div className="xl:col-span-1">
         <WeatherForecast forecast={forecast} unit={unit} />

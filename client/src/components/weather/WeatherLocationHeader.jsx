@@ -1,6 +1,16 @@
 import { createElement } from "react";
 
 export default function WeatherLocationHeader({ city, country, timestamp, locationIcon: LocationIcon }) {
+
+const timezone = new Date()
+  .toString()
+  .match(/\(([A-Za-z\s].*)\)/)?.[1];
+
+const timezoneShort = timezone
+  ?.split(" ")
+  .map(word => word[0])
+  .join("");
+
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center space-x-3">
@@ -24,7 +34,8 @@ export default function WeatherLocationHeader({ city, country, timestamp, locati
           {new Date(timestamp * 1000).toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
-          })}
+            // timeZoneName: "longGeneric",
+          })} {timezoneShort}
         </div>
       </div>
     </div>
