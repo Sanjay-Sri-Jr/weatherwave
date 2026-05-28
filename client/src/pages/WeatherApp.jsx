@@ -8,6 +8,7 @@ function WeatherApp() {
   const {
     currentWeather,
     forecast,
+    forecastChartData,
     loading,
     error,
     unit,
@@ -63,6 +64,7 @@ function WeatherApp() {
             error={error}
             weather={currentWeather}
             forecast={forecast}
+            forecastChartData={forecastChartData}
             unit={unit}
             onRetry={handleRetry}
           />
