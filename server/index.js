@@ -13,7 +13,7 @@ connectDB();
 
 const app = express();
 
-// Trust reverse proxy 
+// Trust reverse proxy (required for Vercel + rate limiting)
 app.set('trust proxy', 1);
 
 // Global Middleware 
@@ -22,7 +22,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
-app.use(generalLimiter); // Rate limit all routes
+app.use(generalLimiter);
 
 // Routes 
 app.use('/api/auth',    authRoutes);
@@ -33,12 +33,16 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running.', timestamp: new Date() });
 });
 
-//  Global Error Handler 
-// MUST be last — after all routes
+// Global Error Handler — MUST be last
 app.use(errorMiddleware);
 
-//  Start Server 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  logger.info(`Server running on http://localhost:${PORT}`);
-});
+// Vercel calls this export as a serverless function
+export default app;
+
+//  Keeping listen() for local development only
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    logger.info(`Server running on http://localhost:${PORT}`);
+  });
+}
