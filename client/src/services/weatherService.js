@@ -1,9 +1,6 @@
 import * as weatherApi from '../api/weatherApi';
 
 const formatForecastLabel = (forecastItem) => {
-  if (typeof forecastItem?.dt_txt === 'string' && forecastItem.dt_txt.includes(' ')) {
-    return forecastItem.dt_txt.split(' ')[1].slice(0, 5);
-  }
 
   if (forecastItem?.dt) {
     return new Date(forecastItem.dt * 1000).toLocaleTimeString([], {
@@ -17,7 +14,12 @@ const formatForecastLabel = (forecastItem) => {
 };
 
 export const transformForecastChartData = (forecast, limit = 8) => {
-  const forecastEntries = forecast?.list?.slice(0, limit) ?? [];
+  
+  const now = Math.floor(Date.now() / 1000);
+
+  const forecastEntries = forecast.list
+    .filter(item => item.dt >= now)
+    .slice(0, 8);
 
   return {
     labels: forecastEntries.map(formatForecastLabel),
