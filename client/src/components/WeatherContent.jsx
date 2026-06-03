@@ -29,16 +29,26 @@ export default function WeatherContent({ loading, error, weather, forecast, fore
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-      <div className="xl:col-span-2">
-        <div className="space-y-8">
-          <WeatherCard weather={weather} unit={unit} />
-          <WeatherChart chartData={forecastChartData} />
-        </div>
+    <div className="grid grid-cols-1 xl:grid-cols-1 gap-8">
+
+      {/* Top Row */}
+      <div>
+        <WeatherCard weather={weather} unit={unit} />
       </div>
-      <div className="xl:col-span-1">
+
+      <div>
         <WeatherForecast forecast={forecast} unit={unit} />
       </div>
+
+      {/* Bottom Row */}
+      <div className="xl:col-span-2">
+        <WeatherChart
+          chartData={forecastChartData}
+          unit={unit}
+          weather={weather}
+        />
+      </div>
+
     </div>
   );
 }

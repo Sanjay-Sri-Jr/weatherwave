@@ -1,22 +1,119 @@
 import { Line } from 'react-chartjs-2';
-import { CategoryScale, Chart as ChartJS, Filler, Legend, LineElement, LinearScale, PointElement, Tooltip, } from 'chart.js';
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
+import { formatTemperature } from '../../utils/weatherUtils';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
-export default function WeatherChart({ chartData, title = 'Forecast Temperature Trend' }) {
-  const labels = chartData?.labels ?? [];
-  const temperatures = chartData?.temperatures ?? [];
+function buildDateRangeLabel(timestamps) {
+  if (!timestamps?.length) return null;
+  const fmt = (ts) =>
+    new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const first = fmt(timestamps[0]);
+  const last  = fmt(timestamps[timestamps.length - 1]);
+  return first === last ? `Forecast: ${first}` : `Forecast: ${first} – ${last}`;
+}
 
-  if (!labels.length || !temperatures.length) {
-    return null;
+
+function getBrowserTimezone() {
+
+  const ianaName = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown';
+
+  const isReadableAbbreviation = (value) => /^[A-Z]{2,6}$/.test(value);
+
+  const toAcronym = (longName) => {
+    if (!longName) return null;
+    const words = longName
+      .split(/\s+/)
+      .map((w) => w.replace(/[^A-Za-z]/g, ''))
+      .filter(Boolean);
+    if (!words.length) return null;
+    return words.map((w) => w[0].toUpperCase()).join('');
+  };
+
+  const ianaOverrides = {
+    'Asia/Kolkata': 'IST',
+    'Asia/Calcutta': 'IST',
+    UTC: 'UTC',
+    'Etc/UTC': 'UTC',
+    'Etc/GMT': 'GMT',
+  };
+
+  let abbr = ianaName;
+  try {
+    const now = new Date();
+
+    const shortParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: ianaName,
+      timeZoneName: 'short',
+      hour: 'numeric',
+    }).formatToParts(now);
+    const shortName = shortParts.find((p) => p.type === 'timeZoneName')?.value ?? '';
+
+    if (isReadableAbbreviation(shortName)) {
+      abbr = shortName;
+    } else {
+      const longParts = new Intl.DateTimeFormat('en-US', {
+        timeZone: ianaName,
+        timeZoneName: 'long',
+        hour: 'numeric',
+      }).formatToParts(now);
+      const longName = longParts.find((p) => p.type === 'timeZoneName')?.value ?? '';
+      abbr = ianaOverrides[ianaName] ?? toAcronym(longName) ?? shortName ?? ianaName;
+    }
+  } catch {
+    abbr = ianaOverrides[ianaName] ?? ianaName;
   }
 
+  const rawOffset = new Date().getTimezoneOffset();
+  const totalMinutes = -rawOffset;
+  const sign = totalMinutes >= 0 ? '+' : '-';
+  const absMinutes = Math.abs(totalMinutes);
+  const hh = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+  const mm = String(absMinutes % 60).padStart(2, '0');
+  const utcOffset = `UTC${sign}${hh}:${mm}`;
+
+  return { ianaName, abbr, utcOffset };
+}
+
+// Component
+
+export default function WeatherChart({
+  chartData,
+  unit = 'C',
+  title = 'Forecast Temperature Trend',
+}) {
+  const labels = chartData?.labels       ?? [];
+  const rawTemps = chartData?.temperatures ?? [];  
+  const timestamps = chartData?.timestamps   ?? [];  
+
+  if (!labels.length || !rawTemps.length) return null;
+
+  //  Unit conversion
+  const displayTemps = rawTemps.map((t) => formatTemperature(t, unit));
+
+  const yAxisLabel = `Temperature (°${unit})`;
+  const unitSuffix = `°${unit}`;
+  const { ianaName, abbr, utcOffset } = getBrowserTimezone();
+
+  // Date range label 
+  const dateRangeLabel = buildDateRangeLabel(timestamps);
+
+  // Chart.js data / options 
   const data = {
     labels,
     datasets: [
       {
-        label: 'Temperature (°C)',
-        data: temperatures,
+        label: `Temperature (°${unit})`,
+        data: displayTemps,
         borderColor: 'rgba(96, 165, 250, 1)',
         backgroundColor: 'rgba(96, 165, 250, 0.14)',
         fill: true,
@@ -45,6 +142,14 @@ export default function WeatherChart({ chartData, title = 'Forecast Temperature 
         bodyColor: '#e2e8f0',
         padding: 12,
         displayColors: false,
+        callbacks: {
+          title(ctx) {
+            return ctx[0]?.label ?? '';
+          },
+          label(ctx) {
+            return `${ctx.parsed.y}${unitSuffix}`;
+          },
+        },
       },
     },
     scales: {
@@ -53,7 +158,7 @@ export default function WeatherChart({ chartData, title = 'Forecast Temperature 
           display: true,
           text: 'Time',
           color: 'rgba(255, 255, 255, 0.78)',
-          font: { weight: '600' }
+          font: { weight: '600' },
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.78)',
@@ -67,12 +172,15 @@ export default function WeatherChart({ chartData, title = 'Forecast Temperature 
       y: {
         title: {
           display: true,
-          text: 'Temperature (°C)',
+          text: yAxisLabel,
           color: 'rgba(255, 255, 255, 0.78)',
-          font: { weight: '600' }
+          font: { weight: '600' },
         },
         ticks: {
           color: 'rgba(255, 255, 255, 0.78)',
+          callback(value) {
+            return `${value}${unitSuffix}`;
+          },
         },
         grid: {
           color: 'rgba(255, 255, 255, 0.08)',
@@ -83,11 +191,35 @@ export default function WeatherChart({ chartData, title = 'Forecast Temperature 
 
   return (
     <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-2xl">
+      {/* ── Header ── */}
       <div className="mb-5">
         <p className="text-sm uppercase tracking-[0.3em] text-blue-200/80">Forecast Chart</p>
         <h2 className="text-2xl font-semibold text-white mt-2">{title}</h2>
+
+        {/* ── Date range + timezone row ── */}
+        <div className="flex flex-wrap items-center gap-2 mt-3">
+          {dateRangeLabel && (
+            <span className="text-xs font-medium text-white/50 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1">
+              {dateRangeLabel}
+            </span>
+          )}
+         
+          <span
+            title={`Times shown in your browser timezone: ${ianaName}`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-white/50 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 cursor-default"
+          >
+            <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Your browser time 
+            <span className="opacity-80">{abbr}</span>
+            <span className="opacity-40">·</span>
+            <span className="opacity-60">{utcOffset}</span>
+          </span>
+        </div>
       </div>
 
+      {/* ── Chart canvas ── */}
       <div className="h-72 md:h-80">
         <Line data={data} options={options} />
       </div>

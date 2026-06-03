@@ -24,6 +24,7 @@ export const transformForecastChartData = (forecast, limit = 8) => {
   return {
     labels: forecastEntries.map(formatForecastLabel),
     temperatures: forecastEntries.map((entry) => Math.round(entry?.main?.temp ?? 0)),
+    timestamps: forecastEntries.map((entry) => entry?.dt ?? 0),
   };
 };
 
