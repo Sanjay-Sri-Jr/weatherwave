@@ -1,15 +1,9 @@
-import { createElement } from "react";
+import { createElement } from 'react';
+import { getTimezoneAbbreviation } from '../../utils/timezone';
 
 export default function WeatherLocationHeader({ city, country, timestamp, locationIcon: LocationIcon }) {
-
-const timezone = new Date()
-  .toString()
-  .match(/\(([A-Za-z\s].*)\)/)?.[1];
-
-const timezoneShort = timezone
-  ?.split(" ")
-  .map(word => word[0])
-  .join("");
+  const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown';
+  const timezoneShort = getTimezoneAbbreviation(browserTimeZone, { fallback: browserTimeZone });
 
   return (
     <div className="flex items-center justify-between mb-8">
@@ -34,7 +28,6 @@ const timezoneShort = timezone
           {new Date(timestamp * 1000).toLocaleTimeString("en-US", {
             hour: "2-digit",
             minute: "2-digit",
-            // timeZoneName: "longGeneric",
           })} {timezoneShort}
         </div>
       </div>

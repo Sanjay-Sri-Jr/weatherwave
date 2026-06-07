@@ -8,7 +8,7 @@ const apiClient = axios.create({
   },
 });
 
-// ── REQUEST INTERCEPTOR ───────────────────────────────────────
+//  REQUEST INTERCEPTOR 
 // Runs before every request is sent.
 // Reads JWT from localStorage and attaches it automatically.
 // This means NO other file needs to manually set the Authorization header.

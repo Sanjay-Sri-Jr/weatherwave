@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { formatTemperature } from '../../utils/weatherUtils';
+import { getTimezoneAbbreviation } from '../../utils/timezone';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
@@ -24,54 +25,9 @@ function buildDateRangeLabel(timestamps) {
 
 
 function getBrowserTimezone() {
-
+  
   const ianaName = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown';
-
-  const isReadableAbbreviation = (value) => /^[A-Z]{2,6}$/.test(value);
-
-  const toAcronym = (longName) => {
-    if (!longName) return null;
-    const words = longName
-      .split(/\s+/)
-      .map((w) => w.replace(/[^A-Za-z]/g, ''))
-      .filter(Boolean);
-    if (!words.length) return null;
-    return words.map((w) => w[0].toUpperCase()).join('');
-  };
-
-  const ianaOverrides = {
-    'Asia/Kolkata': 'IST',
-    'Asia/Calcutta': 'IST',
-    UTC: 'UTC',
-    'Etc/UTC': 'UTC',
-    'Etc/GMT': 'GMT',
-  };
-
-  let abbr = ianaName;
-  try {
-    const now = new Date();
-
-    const shortParts = new Intl.DateTimeFormat('en-US', {
-      timeZone: ianaName,
-      timeZoneName: 'short',
-      hour: 'numeric',
-    }).formatToParts(now);
-    const shortName = shortParts.find((p) => p.type === 'timeZoneName')?.value ?? '';
-
-    if (isReadableAbbreviation(shortName)) {
-      abbr = shortName;
-    } else {
-      const longParts = new Intl.DateTimeFormat('en-US', {
-        timeZone: ianaName,
-        timeZoneName: 'long',
-        hour: 'numeric',
-      }).formatToParts(now);
-      const longName = longParts.find((p) => p.type === 'timeZoneName')?.value ?? '';
-      abbr = ianaOverrides[ianaName] ?? toAcronym(longName) ?? shortName ?? ianaName;
-    }
-  } catch {
-    abbr = ianaOverrides[ianaName] ?? ianaName;
-  }
+  const abbr = getTimezoneAbbreviation(ianaName, { fallback: ianaName });
 
   const rawOffset = new Date().getTimezoneOffset();
   const totalMinutes = -rawOffset;
