@@ -14,7 +14,7 @@ connectDB();
 const app = express();
 
 // Trust reverse proxy (required for Vercel + rate limiting)
-app.set('trust proxy', 1);
+app.set('trust proxy' , 1);
 
 // Global Middleware 
 app.use(cors({
