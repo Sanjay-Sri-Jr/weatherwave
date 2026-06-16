@@ -34,10 +34,9 @@ export const getWeatherByCoords = async (lat, lon) => {
     const params = { lat, lon, appid: apiKey(), units: 'metric' };
 
     const weatherRes = await axios.get(owmUrl('/weather'), { params });
-    const city       = weatherRes.data.name;
 
     const forecastRes = await axios.get(owmUrl('/forecast'), {
-      params: { q: city, appid: apiKey(), units: 'metric' },
+      params,
     });
 
     return {

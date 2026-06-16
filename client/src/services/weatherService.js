@@ -30,8 +30,15 @@ export const transformForecastChartData = (forecast, limit = 8) => {
 
 export const createWeatherService = (api = weatherApi) => ({
 
-  async getWeatherData(city) {
-    const data = await api.getWeatherByCity(city);
+  async getWeatherData(cityOrLocation) {
+    const hasCoordinates =
+      cityOrLocation && typeof cityOrLocation === 'object' &&
+      cityOrLocation.lat != null && cityOrLocation.lon != null;
+
+    const data = hasCoordinates
+      ? await api.getWeatherByCoords(cityOrLocation.lat, cityOrLocation.lon, cityOrLocation)
+      : await api.getWeatherByCity(cityOrLocation);
+
     return {
       currentWeather: data.currentWeather,
       forecast: data.forecast,

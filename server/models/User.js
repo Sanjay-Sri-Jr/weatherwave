@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema(
     searchHistory: [
       {
         city: { type: String, required: true },
+        state: { type: String, default: '' },
+        country: { type: String, default: '' },
+        lat: { type: Number, default: null },
+        lon: { type: Number, default: null },
         searchedAt: { type: Date, default: Date.now },
       },
     ],

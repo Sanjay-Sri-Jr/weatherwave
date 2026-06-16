@@ -15,10 +15,11 @@ function WeatherApp() {
     toggleUnit,
     fetchWeatherByCity,
     fetchWeatherByLocation,
+    refreshWeather,
   } = useWeather();
 
   const handleRetry = () => {
-    fetchWeatherByCity(currentWeather?.name || 'Chennai');
+    refreshWeather();
   };
 
   return (

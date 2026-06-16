@@ -12,7 +12,13 @@ export const getWeatherByCity = asyncHandler(async (req, res) => {
   const data = await weatherService.getWeatherByCity(city);
 
   // Fire-and-forget: save history without blocking the response
-  userService.saveSearchHistory(req.user._id, city).catch(() => {});
+  userService.saveSearchHistory(req.user._id, {
+    city: data.currentWeather?.name || city,
+    country: data.currentWeather?.sys?.country || '',
+    state: '',
+    lat: data.currentWeather?.coord?.lat,
+    lon: data.currentWeather?.coord?.lon,
+  }).catch(() => {});
 
   res.status(200).json({ success: true, ...data });
 });
@@ -22,14 +28,18 @@ export const getWeatherByCity = asyncHandler(async (req, res) => {
  * Fetch weather by geographic coordinates.
  */
 export const getWeatherByCoords = asyncHandler(async (req, res) => {
-  const { lat, lon } = req.query;
+  const { lat, lon, city, state, country } = req.query;
 
   const data = await weatherService.getWeatherByCoords(lat, lon);
 
   // Save city name from coords result to history
-  if (data.currentWeather?.name) {
-    userService.saveSearchHistory(req.user._id, data.currentWeather.name).catch(() => {});
-  }
+  userService.saveSearchHistory(req.user._id, {
+    city: city || data.currentWeather?.name || '',
+    country: country || data.currentWeather?.sys?.country || '',
+    state: state || '',
+    lat: data.currentWeather?.coord?.lat ?? Number(lat),
+    lon: data.currentWeather?.coord?.lon ?? Number(lon),
+  }).catch(() => {});
 
   res.status(200).json({ success: true, ...data });
 });

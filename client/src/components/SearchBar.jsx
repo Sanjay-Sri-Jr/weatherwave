@@ -39,9 +39,8 @@ export function SearchBar({ onSearch, onLocationSearch, loading }) {
         clearSuggestions();
     };
     const handleSuggesionsClick = (city) => {
-        const cityName = city?.name || "";
-        if (!cityName) return;
-        onSearch(cityName);
+        if (!city?.name) return;
+        onSearch(city);
         setQuery("");
         clearSuggestions();
     };

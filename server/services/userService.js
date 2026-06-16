@@ -4,27 +4,65 @@ import logger   from '../utils/logger.js';
 
 const MAX_HISTORY = 10;
 
+const buildHistoryKey = (entry) => {
+  if (entry.lat != null && entry.lon != null) {
+    return `${Number(entry.lat).toFixed(4)},${Number(entry.lon).toFixed(4)}`;
+  }
+
+  return [entry.city, entry.state, entry.country]
+    .filter(Boolean)
+    .join('|')
+    .toLowerCase();
+};
+
+const normalizeHistoryEntry = (cityOrEntry) => {
+  if (typeof cityOrEntry === 'string') {
+    return {
+      city: cityOrEntry,
+      state: '',
+      country: '',
+      lat: null,
+      lon: null,
+      searchedAt: new Date(),
+    };
+  }
+
+  const entry = cityOrEntry || {};
+
+  return {
+    city: entry.city || '',
+    state: entry.state || '',
+    country: entry.country || '',
+    lat: entry.lat != null ? Number(entry.lat) : null,
+    lon: entry.lon != null ? Number(entry.lon) : null,
+    searchedAt: entry.searchedAt || new Date(),
+  };
+};
+
 /**
  * Add a city to the user's search history.
  * Deduplicates (removes old entry if same city),
  * keeps max 10 entries, most recent first.
  *
  * @param {string} userId
- * @param {string} city
+ * @param {string|Object} cityOrEntry
  * @returns {Promise<Array>} Updated history
  */
-export const saveSearchHistory = async (userId, city) => {
+export const saveSearchHistory = async (userId, cityOrEntry) => {
   try {
     const user = await User.findById(userId);
     if (!user) return;
 
-    // Remove duplicate if this city was searched before
+    const entry = normalizeHistoryEntry(cityOrEntry);
+    const entryKey = buildHistoryKey(entry);
+
+    // Remove duplicate if this location was searched before
     user.searchHistory = user.searchHistory.filter(
-      (entry) => entry.city.toLowerCase() !== city.toLowerCase()
+      (existing) => buildHistoryKey(existing) !== entryKey
     );
 
     // Add to front of list
-    user.searchHistory.unshift({ city, searchedAt: new Date() });
+    user.searchHistory.unshift(entry);
 
     // Keep only last MAX_HISTORY entries
     if (user.searchHistory.length > MAX_HISTORY) {
@@ -32,7 +70,7 @@ export const saveSearchHistory = async (userId, city) => {
     }
 
     await user.save();
-    logger.debug(`[UserService] Saved search history for user ${userId}: ${city}`);
+    logger.debug(`[UserService] Saved search history for user ${userId}: ${entry.city}`);
     return user.searchHistory;
   } catch (error) {
     // Non-critical — log and continue; don't fail the weather request
@@ -44,7 +82,7 @@ export const saveSearchHistory = async (userId, city) => {
  * Retrieve a user's search history.
  *
  * @param {string} userId
- * @returns {Promise<Array<{ city: string, searchedAt: Date }>>}
+ * @returns {Promise<Array<{ city: string, state: string, country: string, lat: number, lon: number, searchedAt: Date }>>}
  * @throws {ApiError} 404 if user not found
  */
 export const getSearchHistory = async (userId) => {
