@@ -10,8 +10,8 @@ import WeatherApp from './pages/WeatherApp';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <AuthProvider>  {/* provides authentication state globally via React Context */}
+      <BrowserRouter>  {/* library that enables client-side routing in React applications */}
         {/* Navbar shows on every page */}
         <Navbar />
 

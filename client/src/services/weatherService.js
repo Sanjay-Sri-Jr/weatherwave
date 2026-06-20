@@ -1,7 +1,7 @@
 import * as weatherApi from '../api/weatherApi';
 
 const formatForecastLabel = (forecastItem) => {
-
+ {/*Converts a forecast item's Unix timestamp into a human-readable local time string.*/}
   if (forecastItem?.dt) {
     return new Date(forecastItem.dt * 1000).toLocaleTimeString([], {
       hour: '2-digit',
@@ -14,12 +14,12 @@ const formatForecastLabel = (forecastItem) => {
 };
 
 export const transformForecastChartData = (forecast, limit = 8) => {
-  
+  // Transforms raw forecast data into chart-ready data.
   const now = Math.floor(Date.now() / 1000);
 
   const forecastEntries = forecast.list
     .filter(item => item.dt >= now)
-    .slice(0, 8);
+    .slice(0, limit);
 
   return {
     labels: forecastEntries.map(formatForecastLabel),
@@ -29,7 +29,7 @@ export const transformForecastChartData = (forecast, limit = 8) => {
 };
 
 export const createWeatherService = (api = weatherApi) => ({
-
+    // Factory function that creates a weather service instance with an injected API dependency.
   async getWeatherData(cityOrLocation) {
     const hasCoordinates =
       cityOrLocation && typeof cityOrLocation === 'object' &&

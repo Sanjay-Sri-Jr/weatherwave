@@ -5,7 +5,7 @@ import logger   from '../utils/logger.js';
 // Private helper — build OWM base URL 
 const owmUrl    = (path) => `${process.env.WEATHER_BASE_URL}${path}`;
 const geoUrl    = (path) => `${process.env.GEO_URL}${path}`;
-const apiKey    = ()     => process.env.WEATHER_API_KEY;
+const apiKey    = () => process.env.WEATHER_API_KEY;
 
 export const getWeatherByCity = async (city) => {
   logger.info(`[WeatherService] Fetching weather for city: ${city}`);
@@ -55,7 +55,7 @@ export const searchCitySuggestions = async (query) => {
     const res = await axios.get(geoUrl('/direct'), {
       params: { q: query, limit: 5, appid: apiKey() },
     });
-
+  console.log('RAW RESPONSE:', JSON.stringify(res.data, null, 2));
     return res.data.map(({ name, lat, lon, country, state }) => ({
       name, lat, lon, country, state: state || '',
     }));

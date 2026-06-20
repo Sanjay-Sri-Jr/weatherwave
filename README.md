@@ -49,3 +49,93 @@ Sanjay
 * linkedin: https://www.linkedin.com/in/sanjay-sri-jr/
 
 added dev and main branch
+```
+weatherwave
+├─ client
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  ├─ favicon.svg
+│  │  ├─ icons.svg
+│  │  └─ weather-bg.jpg
+│  ├─ src
+│  │  ├─ api
+│  │  │  ├─ apiClient.js           - Layer: API layer : Create Axios Instance interceptors(request & response)
+│  │  │  ├─ authApi.js             - Layer: API layer : Auth-specific API calls — signup, login, getMe via apiclient.post method  
+│  │  │  ├─ userApi.js             - Layer: API layer : User-specific API operations for search history.
+│  │  │  └─ weatherApi.js          - Layer: API layer : responsible for calling backend weather API  apiclient.get & returning data to components
+│  │  ├─ App.jsx
+│  │  ├─ components
+│  │  │  ├─ charts
+│  │  │  │  └─ WeatherChart.jsx
+│  │  │  ├─ ErrorMessage.jsx
+│  │  │  ├─ ForecastItem.jsx
+│  │  │  ├─ LoadingSpinner.jsx
+│  │  │  ├─ Navbar.jsx
+│  │  │  ├─ ProtectedRoute.jsx
+│  │  │  ├─ SearchBar.jsx
+│  │  │  ├─ TemperatureToggle.jsx
+│  │  │  ├─ weather
+│  │  │  │  ├─ WeatherHighlights.jsx
+│  │  │  │  ├─ WeatherLocationHeader.jsx
+│  │  │  │  ├─ WeatherMetricItem.jsx
+│  │  │  │  ├─ WeatherPrimaryInfo.jsx
+│  │  │  │  └─ WeatherSunTimes.jsx
+│  │  │  ├─ WeatherCard.jsx
+│  │  │  ├─ WeatherContent.jsx
+│  │  │  └─ WeatherForecast.jsx
+│  │  ├─ context
+│  │  │  └─ AuthContext.jsx
+│  │  ├─ hooks
+│  │  │  ├─ useCitySuggestions.js
+│  │  │  └─ useWeather.js
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  ├─ pages
+│  │  │  ├─ Home.jsx
+│  │  │  ├─ LoginPage.jsx
+│  │  │  ├─ SignupPage.jsx
+│  │  │  └─ WeatherApp.jsx
+│  │  ├─ services
+│  │  │  ├─ authService.js            - Layer: Service layer : Handles saving and removing (token & user) in localStorage session,calls authApi
+│  │  │  └─ weatherService.           - Layer: Service layer : It maintain weather-related API calls and transform raw weather data into a format
+│  │     ├─ timezone.js
+│  │     └─ weatherUtils.js
+│  ├─ vercel.json
+│  └─ vite.config.js
+├─ README.md
+└─ server
+   ├─ config
+   │  ├─ db.js
+   │  └─ env.js
+   ├─ controllers
+   │  ├─ authController.js
+   │  └─ weatherController.js
+   ├─ index.js
+   ├─ middleware
+   │  ├─ authMiddleware.js
+   │  ├─ errorMiddleware.js
+   │  └─ rateLimitMiddleware.js
+   ├─ models
+   │  └─ User.js
+   ├─ package-lock.json
+   ├─ package.json
+   ├─ routes
+   │  ├─ authRoutes.js
+   │  └─ weatherRoutes.js
+   ├─ services
+   │  ├─ authService.js
+   │  ├─ userService.js
+   │  └─ weatherService.js
+   ├─ utils
+   │  ├─ ApiError.js
+   │  ├─ asyncHandler.js
+   │  └─ logger.js
+   ├─ validators
+   │  ├─ authValidator.js
+   │  └─ weatherValidator.js
+   └─ vercel.json
+
+```
