@@ -4,7 +4,7 @@ import WeatherCard from "./WeatherCard";
 import WeatherForecast from "./WeatherForecast";
 import WeatherChart from "./charts/WeatherChart";
 
-export default function WeatherContent({ loading, error, weather, forecast, forecastChartData, unit, onRetry }) {
+export default function WeatherContent({ loading, error, weather, selectedLocation, forecast, forecastChartData, unit, onRetry }) {
   if (loading) {
     return (
       <div className="flex justify-center">
@@ -33,7 +33,7 @@ export default function WeatherContent({ loading, error, weather, forecast, fore
 
       {/* Top Row */}
       <div>
-        <WeatherCard weather={weather} unit={unit} />
+        <WeatherCard weather={weather} selectedLocation={selectedLocation} unit={unit} />
       </div>
 
       <div>

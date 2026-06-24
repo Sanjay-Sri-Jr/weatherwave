@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { getTimezoneAbbreviation } from '../../utils/timezone';
 
-export default function WeatherLocationHeader({ city, country, timestamp, locationIcon: LocationIcon }) {
+export default function WeatherLocationHeader({ locationLabel, country, timestamp, locationIcon: LocationIcon }) {
   const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown';
   const timezoneShort = getTimezoneAbbreviation(browserTimeZone, { fallback: browserTimeZone });
 
@@ -12,7 +12,7 @@ export default function WeatherLocationHeader({ city, country, timestamp, locati
           {createElement(LocationIcon, { className: "w-5 h-5 text-white/80" })}
         </div>
         <div>
-          <h2 className="text-white font-semibold text-lg">{city}</h2>
+          <h2 className="text-white font-semibold text-lg">{locationLabel}</h2>
           <p className="text-white/60 text-sm">{country}</p>
         </div>
       </div>

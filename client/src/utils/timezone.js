@@ -3,7 +3,7 @@ const DEFAULT_FALLBACK = 'UTC';
 const IANA_ABBREVIATION_OVERRIDES = {
   'Asia/Kolkata': 'IST',
   'Asia/Calcutta': 'IST',
-  UTC: 'UTC',
+   UTC: 'UTC',
   'Etc/UTC': 'UTC',
   'Etc/GMT': 'GMT',
 };

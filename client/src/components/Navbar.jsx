@@ -13,7 +13,7 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  // Helper — highlight active nav link
+  // Helper : highlight active nav link
   const isActive = (path) => location.pathname === path;
 
   const navLinkClass = (path) =>

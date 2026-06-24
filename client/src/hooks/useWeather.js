@@ -4,6 +4,7 @@ import defaultWeatherService from '../services/weatherService';
 const LAST_LOCATION_KEY = 'ww_lastLocation';
 const LAST_CITY_KEY = 'ww_lastCity';
 
+// Converts stored string data from localStorage back into a JSON object.
 const deserializeLocation = (storedValue) => {
   if (!storedValue) return 'Chennai';
 
@@ -19,11 +20,13 @@ const deserializeLocation = (storedValue) => {
   return storedValue;
 };
 
+// Retrieves the last saved location from localStorage.
 const getInitialLocation = () =>
   deserializeLocation(
     localStorage.getItem(LAST_LOCATION_KEY) || localStorage.getItem(LAST_CITY_KEY)
   );
 
+// Converts location data into a storable string format
 const serializeLocation = (location) =>
   typeof location === 'string' ? location : JSON.stringify(location);
 
@@ -37,6 +40,7 @@ export const useWeather = ({
   const [error, setError] = useState(null);
   const [unit, setUnit] = useState('C');
   const [lastLocation, setLastLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   // Internal state setter for weather data to avoid repetition in fetch functions  
   const _applyWeatherData = ({ currentWeather: cw, forecast: fc, forecastChartData: chartData }) => {
@@ -50,6 +54,7 @@ export const useWeather = ({
     setLoading(true);
     setError(null);
     setLastLocation(cityOrLocation);
+    setSelectedLocation(cityOrLocation);
 
     try {
       const data = await service.getWeatherData(cityOrLocation);
@@ -84,6 +89,13 @@ export const useWeather = ({
           const data = await service.getWeatherData(location);
           _applyWeatherData(data);
           setLastLocation(location);
+          setSelectedLocation({
+            name: data.currentWeather?.name || '',
+            state: '',
+            country: data.currentWeather?.sys?.country || '',
+            lat: latitude,
+            lon: longitude,
+          });
           // Save detected city name for next session
           if (data.currentWeather?.name) {
             localStorage.setItem(LAST_LOCATION_KEY, serializeLocation(location));
@@ -126,5 +138,6 @@ export const useWeather = ({
     fetchWeatherByLocation,
     refreshWeather,
     forecastChartData,
+    selectedLocation,
   };
 };

@@ -3,10 +3,7 @@ import React from 'react'
 
 function ErrorMessage({message,onRetry}) {
     return (
-        <div className='bg-red-500
-backdrop-blur-xl
-border border-red-400/20
-rounded-3xl p-8 shadow-2xl'>
+        <div className='bg-red-500 backdrop-blur-xl  border border-red-400/20 rounded-3xl p-8 shadow-2xl'>
             <div className='flex items-center space-x-4 mb-4'>
                 <div className='p-3 bg-red-500/20 rounded-full'>
                     <AlertCircle className='w-6 h-6 text-red-300'></AlertCircle>

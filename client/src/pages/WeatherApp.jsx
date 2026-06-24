@@ -16,6 +16,7 @@ function WeatherApp() {
     fetchWeatherByCity,
     fetchWeatherByLocation,
     refreshWeather,
+    selectedLocation,
   } = useWeather();
 
   const handleRetry = () => {
@@ -64,6 +65,7 @@ function WeatherApp() {
             loading={loading}
             error={error}
             weather={currentWeather}
+            selectedLocation={selectedLocation}
             forecast={forecast}
             forecastChartData={forecastChartData}
             unit={unit}

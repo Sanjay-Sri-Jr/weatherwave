@@ -87,10 +87,10 @@ weatherwave
 │  │  │  ├─ WeatherContent.jsx
 │  │  │  └─ WeatherForecast.jsx
 │  │  ├─ context
-│  │  │  └─ AuthContext.jsx
+│  │  │  └─ AuthContext.jsx            - Layer: State management layer : React Context that provides authentication state (user, token,isAuthenticated, loading) and actions (setAuthLogin, logout) to the entire component tree.
 │  │  ├─ hooks
-│  │  │  ├─ useCitySuggestions.js
-│  │  │  └─ useWeather.js
+│  │  │  ├─ useCitySuggestions.js     -Layer: Cust Hook layer (btwe service layer and UI layer):Custom hook for debounced city autocomplete logic
+│  │  │  └─ useWeather.js             -Layer: Cust Hook layer (btwe service layer and UI layer): centralizes weather-related state management, API communication, location persistence, geolocation handling, refresh functionality, temperature unit management for the Weather application.
 │  │  ├─ index.css
 │  │  ├─ main.jsx
 │  │  ├─ pages

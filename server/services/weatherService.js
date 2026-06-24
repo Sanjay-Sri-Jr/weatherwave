@@ -53,7 +53,7 @@ export const searchCitySuggestions = async (query) => {
 
   try {
     const res = await axios.get(geoUrl('/direct'), {
-      params: { q: query, limit: 5, appid: apiKey() },
+      params: { q: query, limit: 10, appid: apiKey() },
     });
   console.log('RAW RESPONSE:', JSON.stringify(res.data, null, 2));
     return res.data.map(({ name, lat, lon, country, state }) => ({

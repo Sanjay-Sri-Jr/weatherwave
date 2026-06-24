@@ -14,21 +14,21 @@ import { getTimezoneAbbreviation } from '../../utils/timezone';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 
+// creation of Forecast start date and end date .
 function buildDateRangeLabel(timestamps) {
   if (!timestamps?.length) return null;
   const fmt = (ts) =>
     new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const first = fmt(timestamps[0]);
-  const last  = fmt(timestamps[timestamps.length - 1]);
+  const last = fmt(timestamps[timestamps.length - 1]);
   return first === last ? `Forecast: ${first}` : `Forecast: ${first} – ${last}`;
 }
 
 
 function getBrowserTimezone() {
-  
+
   const ianaName = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Unknown';
   const abbr = getTimezoneAbbreviation(ianaName, { fallback: ianaName });
-
   const rawOffset = new Date().getTimezoneOffset();
   const totalMinutes = -rawOffset;
   const sign = totalMinutes >= 0 ? '+' : '-';
@@ -47,9 +47,9 @@ export default function WeatherChart({
   unit = 'C',
   title = 'Forecast Temperature Trend',
 }) {
-  const labels = chartData?.labels       ?? [];
-  const rawTemps = chartData?.temperatures ?? [];  
-  const timestamps = chartData?.timestamps   ?? [];  
+  const labels = chartData?.labels ?? [];
+  const rawTemps = chartData?.temperatures ?? [];
+  const timestamps = chartData?.timestamps ?? [];
 
   if (!labels.length || !rawTemps.length) return null;
 
@@ -100,12 +100,24 @@ export default function WeatherChart({
         displayColors: false,
         callbacks: {
           title(ctx) {
-            return ctx[0]?.label ?? '';
+            const index = ctx[0]?.dataIndex;
+
+            if (index === undefined) return '';
+
+            return new Date(timestamps[index] * 1000).toLocaleString('en-US', {
+              weekday: 'short',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
           },
+
           label(ctx) {
             return `${ctx.parsed.y}${unitSuffix}`;
           },
         },
+
       },
     },
     scales: {
@@ -159,15 +171,15 @@ export default function WeatherChart({
               {dateRangeLabel}
             </span>
           )}
-         
+
           <span
             title={`Times shown in your browser timezone: ${ianaName}`}
             className="inline-flex items-center gap-1.5 text-xs font-medium text-white/50 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 cursor-default"
           >
             <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
-            Time Zone: 
+            Time Zone:
             <span className="opacity-80">{abbr}</span>
             <span className="opacity-40">·</span>
             <span className="opacity-60">{utcOffset}</span>
